@@ -25,3 +25,8 @@ Config——自定义配置
 
 #
 [![Stargazers over time](https://starchart.cc/VIKINGYFY/OpenWRT-CI.svg?variant=adaptive)](https://starchart.cc/VIKINGYFY/OpenWRT-CI)
+
+
+# ax1800pro
+IPQ60XX-WIFI-YES-VIKINGYFY-main
+re-ss-01
