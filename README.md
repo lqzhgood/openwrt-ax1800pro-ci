@@ -1,4 +1,5 @@
 # OpenWRT-CI
+
 云编译OpenWRT固件
 
 官方版：
@@ -8,11 +9,13 @@ https://github.com/immortalwrt/immortalwrt.git
 https://github.com/VIKINGYFY/immortalwrt.git
 
 # U-BOOT
+
 高通版：
 https://github.com/chenxin527/uboot-ipq60xx-emmc-build
 https://github.com/chenxin527/uboot-ipq60xx-nor-build
 联发科版：
 https://drive.wrt.moe/uboot/mediatek
+
 # 固件简要说明
 
 固件每天早上4点自动编译。
@@ -30,9 +33,14 @@ Scripts——自定义脚本
 Config——自定义配置
 
 #
+
 [![Stargazers over time](https://starchart.cc/VIKINGYFY/OpenWRT-CI.svg?variant=adaptive)](https://starchart.cc/VIKINGYFY/OpenWRT-CI)
 
-
 # ax1800pro
+
 IPQ60XX-WIFI-YES-VIKINGYFY-main
 re-ss-01
+
+# forked
+
+from https://github.com/VIKINGYFY/OpenWRT-CI
