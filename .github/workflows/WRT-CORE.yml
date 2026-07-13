@@ -115,6 +115,41 @@ jobs:
             sed -i '/.cn\//d; /tencent/d; /aliyun/d' "$PROJECT_MIRRORS_FILE"
           fi
 
+      - name: Upstream Version
+        run: |
+          set +eo pipefail   # 纯展示信息：API 异常只显示 unknown，绝不中断编译
+          UP_REPO="immortalwrt/immortalwrt"
+          UP_HEAD="${WRT_SOURCE%%/*}:${WRT_BRANCH}"
+
+          # 求当前源码与官方 master 的共同基点 = 本次构建对应的上游真实 commit
+          UP_JSON=$(curl -sL -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/$UP_REPO/compare/master...$UP_HEAD")
+          UP_HASH=$(echo "$UP_JSON" | jq -r '.merge_base_commit.sha // empty')
+          UP_DATE=$(echo "$UP_JSON" | jq -r '.merge_base_commit.commit.committer.date // empty')
+
+          # 最近的上游正式发布 tag（取语义版本最大的 vX.Y.Z）
+          UP_TAG=$(curl -sL -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/$UP_REPO/tags?per_page=100" | jq -r '[.[].name|select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))]|sort_by(ltrimstr("v")|split(".")|map(tonumber))|last // empty')
+
+          # 当前基点相对该发布 tag 的领先/落后提交数、tag 日期、提交时间差（天）
+          UP_DIFF=$(curl -sL -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com/repos/$UP_REPO/compare/$UP_TAG...$UP_HASH")
+          UP_AHEAD=$(echo "$UP_DIFF" | jq -r '.ahead_by // empty')
+          UP_BEHIND=$(echo "$UP_DIFF" | jq -r '.behind_by // empty')
+          UP_TAGDATE=$(echo "$UP_DIFF" | jq -r '.base_commit.commit.committer.date // empty')
+          UP_DAYS=unknown
+          if [ -n "$UP_DATE" ] && [ -n "$UP_TAGDATE" ]; then
+            T1=$(date -d "$UP_DATE" +%s 2>/dev/null)
+            T2=$(date -d "$UP_TAGDATE" +%s 2>/dev/null)
+            [ -n "$T1" ] && [ -n "$T2" ] && UP_DAYS=$(( (T1 - T2) / 86400 ))
+          fi
+
+          echo "WRT_UPHASH=${UP_HASH:-unknown}" >> $GITHUB_ENV
+          echo "WRT_UPDATE=${UP_DATE:-unknown}" >> $GITHUB_ENV
+          echo "WRT_UPTAG=${UP_TAG:-unknown}" >> $GITHUB_ENV
+          echo "WRT_UPLINK=https://github.com/$UP_REPO/commit/${UP_HASH}" >> $GITHUB_ENV
+          echo "WRT_UPTAGDATE=${UP_TAGDATE:-unknown}" >> $GITHUB_ENV
+          echo "WRT_UPAHEAD=${UP_AHEAD:-unknown}" >> $GITHUB_ENV
+          echo "WRT_UPBEHIND=${UP_BEHIND:-unknown}" >> $GITHUB_ENV
+          echo "WRT_UPDAYS=${UP_DAYS}" >> $GITHUB_ENV
+
       - name: Check Scripts
         run: |
           find ./ -maxdepth 3 -type f -iregex ".*\(txt\|sh\)$" -exec dos2unix {} \; -exec chmod +x {} \;
@@ -248,9 +283,16 @@ jobs:
             源码：${{env.WRT_REPO}}
             分支：${{env.WRT_BRANCH}}
             版本：${{env.WRT_VERSION}}
-            提交：${{env.WRT_COMMIT}}
-            提交时间：${{env.WRT_CDATE}}
-            源码快照：${{env.WRT_CLINK}}
+            构建提交：${{env.WRT_COMMIT}}
+            构建时间：${{env.WRT_CDATE}}
+            构建快照：${{env.WRT_CLINK}}
+
+            上游源码：https://github.com/immortalwrt/immortalwrt
+            上游提交：${{env.WRT_UPHASH}}
+            上游时间：${{env.WRT_UPDATE}}
+            上游快照：${{env.WRT_UPLINK}}
+            上游最新发布：${{env.WRT_UPTAG}}（${{env.WRT_UPTAGDATE}}）
+            相对发布：领先 ${{env.WRT_UPAHEAD}} / 落后 ${{env.WRT_UPBEHIND}} 提交，基点比发布新 ${{env.WRT_UPDAYS}} 天
 
             配置：${{env.WRT_CONFIG}}
             平台：${{env.WRT_TARGET}}
