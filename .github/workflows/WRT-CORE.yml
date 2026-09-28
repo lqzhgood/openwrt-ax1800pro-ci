@@ -118,7 +118,6 @@ jobs:
         id: clone-code
         run: |
           git clone --depth=1 --single-branch --branch $WRT_BRANCH $WRT_REPO ./wrt/
-	  
           cd ./wrt/
           WRT_HASH=$(git rev-parse HEAD)
           echo "WRT_HASH=$WRT_HASH" >> $GITHUB_ENV
@@ -316,8 +315,8 @@ jobs:
 
             内核版本：${{env.WRT_KVER}}
             插件列表：${{env.WRT_LIST}}
-	    
-	    版本：${{env.WRT_VERSION}}
+
+            版本：${{env.WRT_VERSION}}
             构建提交：${{env.WRT_COMMIT}}
             构建时间：${{env.WRT_CDATE}}
             构建快照：${{env.WRT_CLINK}}
@@ -329,8 +328,8 @@ jobs:
             上游快照：${{env.WRT_UPLINK}}
             上游最新发布：${{env.WRT_UPTAG}}（${{env.WRT_UPTAGDATE}}）
             相对发布：领先 ${{env.WRT_UPAHEAD}} / 落后 ${{env.WRT_UPBEHIND}} 提交，基点比发布新 ${{env.WRT_UPDAYS}} 天
-	    
 
+            
   cache-rollover:
     name: Roll cache generations
     needs: core
